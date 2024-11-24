@@ -3,9 +3,9 @@ library(ggplot2)
 library(DT)
 library(purrr)
 library(Metrics)
-
+library(here)
 ## Set working drive
-setwd("C:/GitHub/MIMICS_STODE")
+setwd(here())
 
 #----------------------------------------
 # Load necessary model components
@@ -18,7 +18,7 @@ source("functions/RXEQ.R")
 source("functions/calc_Tpars.R")
 
 # Set MIMICS parameters
-source("parameters/MIMICS_parameters_MSBio_Incubation.R")  #--> Default "Sandbox" - Wieder et al. 2015
+source("Parameters/MIMICS_parameters_MSBio_Incubation.R")  #--> Default "Sandbox" - Wieder et al. 2015
 
 # Bring in MIMICS incubation simulation function
 source("functions/MIMICS_sim_incubation.R")
@@ -28,6 +28,11 @@ source("functions/MIMICS_sim_incubation.R")
 # Bring in MSBio forcing data
 MSB_data <- read.csv("Example_simulations/Data/MSBio_MIM_forcings.csv")
 forcing_df <- MSB_data
+
+# forcing data for east toolik
+# need: incubation ID, SITE (TOOL), TSOI (soil temp?), clay content;
+# lig N, CN, LIG_N, MAT, TINC <- Incubationt temperature?; Treatmetn; 
+# MAT
 
 #---------------------------------------------------------
 # Run single incubation
@@ -40,7 +45,7 @@ forcing_df <- MSB_data
 #---------------------------------------------------------
 forcing_df <- MSB_data
 MIMrun <- forcing_df %>% split(1:nrow(forcing_df)) %>% 
-            map(~MIMICS_INCUBATION(df=., days=105, step="daily", output_type = 2)) %>% 
+            map(~MIMICS_INCUBATION(df=., days=105, step="daily", output_type = 1)) %>% 
             bind_rows() 
 
 MC_MIMICS <- MIMrun %>% left_join(forcing_df %>% select(-SITE), by="ID")
@@ -83,3 +88,8 @@ plt <- ggplot(plot_df,
   #ylim(0, 0.13) + xlim(0, 0.13) +
   theme_minimal()
 plt
+
+
+plot_df %>%
+  ggplot(aes(x = DAY, y = CO2C_prop)) +
+  geom_point(aes(color = SITE))

@@ -11,10 +11,15 @@ Kint    <- rep(3.19, 6) * 0.7543530  #<-- CALIBRATION FACTOR
 #aK      <- rep(10, 6)
 aK      <- rep(0.15625, 6)  #***UNIQUE TO INCUBATION. WHY?
 #vMOD    <- c(10, 2, 10, 3, 3, 2)
+# # in order: micr-metlit; micr-strlit; micr-soma; micK-metlit; micK-strlit; mick-soma
 vMOD    <- c(2, 0.4, 2, 0.6, 0.6, 0.4) #***UNIQUE TO INCUBATION. WHY?
-kMOD    <- c(8, 2, 4, 2, 4, 6)
+kMOD    <- c(8, 2, 4, 2, 4, 6) # in order: micr-metlit; micr-strlit; micr-soma; micK-metlit; micK-strlit; mick-soma
 KO      <- c(6, 6)
 #CUE     <- c(0.55, 0.25, 0.75, 0.35)
+# CUE[1] - metabolic liter and soma to mic1
+# CUE[2] - structural litter to mic1
+# CUE[3] - metabolic and soma to mic2
+# CUE[4] - structural litter to mic2
 CUE     <- c(0.5, 0.25, 0.7, 0.35) #***UNIQUE TO INCUBATION. WHY?
 tau_r   <- c(0.00052, 0.3)
 tau_K   <- c(0.00024, 0.1)
