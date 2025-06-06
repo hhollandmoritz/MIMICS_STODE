@@ -56,7 +56,7 @@ MIMICS_LITBAG <- function(forcing_df, litBAG, dailyInput=NA, loop_dailyInput=TRU
       } else {input_doy <- d}
 
       # Set daily Tpars from "dailyInput" dataframe (add in the function arguments)
-      Tpars_mod = calc_Tpars_Conly(ANPP = dailyInput$ANPP[input_doy]/2,
+      Tpars_mod = calc_Tpars_Conly(ANPP = dailyInput$ANPP[input_doy]/2, # why divide by 2?
                              fCLAY = dailyInput$CLAY[input_doy]/100, 
                              TSOI = dailyInput$TSOI[input_doy], 
                              MAT = dailyInput$MAT[input_doy], 

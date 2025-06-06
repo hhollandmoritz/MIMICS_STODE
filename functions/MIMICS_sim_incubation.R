@@ -22,7 +22,9 @@ MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
   
   ### Bring in forcing ANPP value, convert gDW to gC
   #ANPP <- df$ANPP/2
-  ANPP <- 0 #<--- 0 turns off additional C inputs
+  #ANPP <- 0 #<--- 0 turns off additional C inputs
+  # Turning back on ANPP since incubation centers on adding carbon
+  ANPP <- df$ANPP # already in gC/m^2/year
   
   ### Bring in CLAY value, convert from percent to decimal
   fCLAY <- df$CLAY/100
@@ -36,7 +38,8 @@ MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
   CN <- df$CN
 
   # Bring in soil moisture information
-  theta_liq  <- df$VWC #GWC/100  #<--- ***Using VWC, not GWC. What's best?
+  # theta_liq  <- df$VWC #GWC/100  #<--- ***Using VWC, not GWC. What's best?
+  theta_liq  <- df$GWC/100  #<--- ***switching back to GWC since that's what I have
   theta_frzn <- 0 
 
   ### Bring in mean annual temperature data
@@ -60,7 +63,7 @@ MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
   Tpars <- calc_Tpars_Conly(ANPP=ANPP, fCLAY=fCLAY, TSOI=TSOI, MAT=MAT,     
                             CN=CN, LIG=LIG, LIG_N=LIG_N,
                             theta_liq=theta_liq, theta_frzn=theta_frzn, W_SCALAR = W_SCALAR) 
-  
+  print(Tpars)
   # Set fMET
   fMET  <- fmet_p[1] * (fmet_p[2] - fmet_p[3] * LIG_N)   
   
