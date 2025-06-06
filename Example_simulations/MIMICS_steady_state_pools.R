@@ -3,9 +3,10 @@ library(ggplot2)
 library(DT)
 library(purrr)
 library(Metrics)
+library(here)
 
 ## Set working drive
-setwd("C:/GitHub/MIMICS_STODE")
+#setwd("C:/GitHub/MIMICS_STODE")
 
 
 #----------------------------------------
@@ -22,8 +23,8 @@ source("functions/calc_Tpars.R")
 source("functions/MIMICS_calc_steady_state_pools.R")
 
 # Set MIMICS parameters
-#source("parameters/MIMICS_parameters_sandbox_20231129.R")  #--> Default "Sandbox" - Wieder et al. 2015
-source("parameters/MIMICS_parameters_ReynoldsCreek_20240130.R")  #--> For Reynolds Creek. See Pierson et al. 2022
+source("Parameters/MIMICS_parameters_sandbox_20231129.R")  #--> Default "Sandbox" - Wieder et al. 2015
+#source("parameters/MIMICS_parameters_ReynoldsCreek_20240130.R")  #--> For Reynolds Creek. See Pierson et al. 2022
 
 
 #-------------------------------------------------------
@@ -33,8 +34,15 @@ source("parameters/MIMICS_parameters_ReynoldsCreek_20240130.R")  #--> For Reynol
 #-------------------------------------------------------
 
 # Forcing data for forcing_data sites
-#forcing_data <- read.csv("example_simulations/data/LTER_SITE_1.csv", as.is=T)
-forcing_data <- read.csv("example_simulations/data/ReynoldsCreek_SOC_HiRes.csv", as.is=T, check.names = T)
+forcing_data <- read.csv("Example_simulations/Data/LTER_SITE_1.csv", as.is=T)
+forcing_data_incubation <- read.table("Example_simulations/Data/incubation_end.tsv", header = T)
+
+forcing_data <- forcing_data_incubation %>%
+  mutate(Set = paste0(Carbon.Source, Microbial.Community)) %>%
+  select(-gwc) %>%
+  mutate(MAT_orig = MAT,
+         MAT = TINC)
+#forcing_data <- read.csv("Example_simulations/Data/ReynoldsCreek_SOC_HiRes.csv", as.is=T, check.names = T)
 colnames(forcing_data)[1] <- "Set"  # Fix for first column name import error
 
 
