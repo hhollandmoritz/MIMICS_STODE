@@ -3,9 +3,11 @@ library(ggplot2)
 library(DT)
 library(purrr)
 library(Metrics)
+library(here)
 
 ## Set working drive
-setwd("C:/GitHub/MIMICS_STODE")
+#setwd("C:/GitHub/MIMICS_STODE")
+setwd(here())
 
 #----------------------------------------
 # Load necessary model components
@@ -24,14 +26,14 @@ source("functions/MIMICS_calc_steady_state_pools.R")
 source("functions/MIMICS_sim_litterbag.R")
 
 # Set MIMICS parameters
-source("parameters/MIMICS_parameters_sandbox_20231129.R")
+source("Parameters/MIMICS_parameters_sandbox_20231129.R")
 
 #--------------------------------------
 # Datasets for example simulations
 #--------------------------------------
 
 # Forcing data for LTER sites
-LTER <- read.csv("example_simulations/data/LTER_SITE_1.csv", as.is=T)
+LTER <- read.csv("Example_simulations/Data/LTER_SITE_1.csv", as.is=T)
 
 # Load LiDET litter bag data 
 source("Utilities/load_LiDET_litterbags.R")
@@ -56,6 +58,8 @@ forcing_input <- data.frame(Site = "TEST SITE",
                             LIG_N = 20.588,
                             GWC = 35)
 
+# forcing_input <- incubation_mimics_end[1,]
+# forcing_input <- incubation_mimics_end[4,]
 # Lets build a daily temperature curve
 #------------------------------------------
 source("Utilities/temp_curve_builder.R")
@@ -65,7 +69,8 @@ daily_TSOI <- generate_temp_curve(winter_low = 5, summer_high = 25, mean_temp = 
 # Now build out the daily inputs, keeping all same except TSOI
 dailyInputs <- data.frame(ANPP = rep(forcing_input$ANPP, 365), 
                           CLAY = rep(forcing_input$CLAY, 365), 
-                          TSOI = daily_TSOI,
+                          # TSOI = daily_TSOI,
+                          TSOI = rep(forcing_input$TSOI, 365),
                           MAT = rep(forcing_input$MAT, 365), 
                           LIG_N = rep(forcing_input$LIG_N, 365),
                           CN = rep(forcing_input$CN, 365),  
