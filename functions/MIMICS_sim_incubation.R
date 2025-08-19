@@ -6,13 +6,16 @@ library(rootSolve)
 #> Input dataframe ("df") must contain columns: SITE, ANPP, fCLAY, TSOI, LIG_N or LIG + CN // Optional: MAT, GWC, W_SCALAR 
 #>> With output required for running forward
 ###############################################
-MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
+MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2, dailyInput=NA, loop_dailyInput=TRUE){ # add dailyinput; and loopdaily input?
   
   #DEBUG
-  # df = MSB_data[1,]
-  # days = 105
+  # df = incubation_mimics_end[3,]
+  # days = 35
   # step = "hourly"
   # output_type = 1
+  # dailyInput <- daily_inputs
+  # loop_dailyInput = FALSE
+  # verbose = TRUE
   
   # Convert all column names to upper case
   colnames(df) <- toupper(colnames(df))
@@ -75,7 +78,7 @@ MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
   OXIDAT  <- rep(NA, dim=1)
   
   # Initialize model pools and fluxes
-  LIT_INIT_TOT = 1000 # Init litter pool for incubation 
+  LIT_INIT_TOT = 0.0001 # Init litter pool for incubation (was 1000; HHM)
   I        <- rep(0,2)
   LIT_1    <- LIT_INIT_TOT * fMET      
   LIT_2    <- LIT_INIT_TOT * (1-fMET)
@@ -126,16 +129,37 @@ MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
                            CO2_MICK = rep(NA, days),
                            CO2_prop_totC= rep(NA, days))
   }
-  
   ### BEGIN MODEL LOOP ###
   for (d in 1:days) {
+  # if daily input; initialize daily Tpars from daily input dataframe; 
+    if (all(!is.na(dailyInput))) {
+      if(loop_dailyInput){
+        input_doy = (d - 1) %% nrow(dailyInput) + 1
+      } else {input_doy <- d}
+  
+      # Set daily Tpars from "dailyInput" dataframe (add in the function arguments)
+      Tpars_mod = calc_Tpars_Conly(ANPP = dailyInput$ANPP[input_doy], 
+                                   fCLAY = dailyInput$CLAY[input_doy]/100,
+                                   TSOI = dailyInput$TSOI[input_doy],
+                                   MAT = dailyInput$MAT[input_doy],
+                                   LIG_N = dailyInput$LIG_N[input_doy],
+                                   CN = dailyInput$CN[input_doy],  # Only needed if LIG_N not supplied
+                                   LIG = dailyInput$LIG[input_doy],  # Only needed if LIG_N not supplied
+                                   theta_liq = dailyInput$GWC[input_doy]/100,
+                                   theta_frzn = 0,  # Change to column name if frozen water content is available
+                                   W_SCALAR = dailyInput$W_SCALAR[input_doy])
+    } else {
+      # Use ss Tpars (i.e., same forcing variables for each sim day)
+      Tpars_mod = Tpars
+    }
+    
     for (h in 1:24) {
       if(step == "hourly"){
         update <- RXEQ(y = c(LIT_1 = LIT_1, LIT_2 = LIT_2, 
                              MIC_1 = MIC_1, MIC_2 = MIC_2, 
                              SOM_1 = SOM_1, SOM_2 = SOM_2, 
                              SOM_3 = SOM_3),
-                       pars = Tpars)
+                       pars = Tpars_mod) # need to replace with Tpars_mod
         
         # Update C pools
         LIT_1  <- LIT_1 + update[[1]][1]
@@ -166,13 +190,13 @@ MIMICS_INCUBATION <- function(df, days=105, step="daily", output_type=2){
         MIMout$CO2_prop_totC[iter] <- (MIMout$CO2_MICr[iter] + MIMout$CO2_MICK[iter]) / LIT_INIT_TOT
       
       } else if(step == "daily"){
-          if(h == 24) {
+          if(h == 24) { # on the 24th hour report out. 
             # Get model output from RXEQ ftn
             update <- RXEQ(y = c(LIT_1 = LIT_1, LIT_2 = LIT_2, 
                                      MIC_1 = MIC_1, MIC_2 = MIC_2, 
                                      SOM_1 = SOM_1, SOM_2 = SOM_2, 
                                      SOM_3 = SOM_3),
-                               pars = Tpars)
+                               pars = Tpars_mod)
             update[[1]] = update[[1]] * 24
             update[[2]] = update[[2]] * 24
         
